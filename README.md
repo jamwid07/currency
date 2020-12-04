@@ -1,60 +1,74 @@
-<p align="center">
-    <a href="https://github.com/yiisoft" target="_blank">
-        <img src="https://avatars0.githubusercontent.com/u/993323" height="100">
-    </a>
-    <h1 align="center">Yii 2 Advanced Project Template</h1>
-    <br>
-</p>
+# Сервис показа курса валют к рублю
 
-Yii 2 Advanced Project Template is a skeleton [Yii 2](http://www.yiiframework.com/) application best for
-developing complex Web applications with multiple tiers.
+## Запуск проекта
+После того как скачали к себе локально выполните следующие шаги для того, что бы заработал этот проект.
 
-The template includes three tiers: front end, back end, and console, each of which
-is a separate Yii application.
+1. Настройте домен для этого проекта указав корневую папку на `api/web`;
+2. Перейдите к корневой папке проекта в консоле и выполните команду `composer install`;
+3. После того как скачались все зависимые пакеты, выполните команду `php init` и выберите желаемую среду вводя соответсвующую цыфру;
+4. Найдите файл `.env.example` в корневой папке и сделайте копию от него с новым названием `.env`. Откройте этот новый файл и введите в значение переменных свои параметры среды разработки;
+5. После этого выполните команду `./yii migrate` чтобы применить миграции к базе данных.
+6. Готово! Можете пользоватся API ранее настроенному домену.
 
-The template is designed to work in a team development environment. It supports
-deploying the application in different environments.
+## Точки запросов API
 
-Documentation is at [docs/guide/README.md](docs/guide/README.md).
+`domain.com/currencies` - Запрос списка валют с постраничным переходом
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![Total Downloads](https://img.shields.io/packagist/dt/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![build](https://github.com/yiisoft/yii2-app-advanced/workflows/build/badge.svg)](https://github.com/yiisoft/yii2-app-advanced/actions?query=workflow%3Abuild)
+**Параметры запроса:**
+* `page={number}` - переход по выбранной странице;
+* `per-page={number}` - количество элементов в одной странице. По умолчанию - 20;
 
-DIRECTORY STRUCTURE
--------------------
-
+**Структура ответа:**
+```json
+{
+  "items": [
+    {
+      "id": 5,
+      "code": "BYN",
+      "name": "Белорусский рубль",
+      "rate": 28.9001,
+      "insert_dt": "2020-12-04 22:35:28"
+    },
+    ...
+  ],
+  "_links": {
+    "self": {
+      "href": "http://api.cur.loc/currencies?per-page=2&page=3"
+    },
+    "first": {
+      "href": "http://api.cur.loc/currencies?per-page=2&page=1"
+    },
+    "last": {
+      "href": "http://api.cur.loc/currencies?per-page=2&page=17"
+    },
+    "prev": {
+      "href": "http://api.cur.loc/currencies?per-page=2&page=2"
+    },
+    "next": {
+      "href": "http://api.cur.loc/currencies?per-page=2&page=4"
+    }
+  },
+  "_meta": {
+    "totalCount": 34,
+    "pageCount": 17,
+    "currentPage": 3,
+    "perPage": 2
+  }
+}
 ```
-common
-    config/              contains shared configurations
-    mail/                contains view files for e-mails
-    models/              contains model classes used in both backend and frontend
-    tests/               contains tests for common classes    
-console
-    config/              contains console configurations
-    controllers/         contains console controllers (commands)
-    migrations/          contains database migrations
-    models/              contains console-specific model classes
-    runtime/             contains files generated during runtime
-backend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains backend configurations
-    controllers/         contains Web controller classes
-    models/              contains backend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for backend application    
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-frontend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains frontend configurations
-    controllers/         contains Web controller classes
-    models/              contains frontend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for frontend application
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-    widgets/             contains frontend widgets
-vendor/                  contains dependent 3rd-party packages
-environments/            contains environment-based overrides
+`domain.com/currency/{code}` - Запрос одной валюты по символному коду. Передаёт ошибку 404 если валюта не найдена
+
+**Структура ответа**
+```json
+{
+  "id": 11,
+  "code": "USD",
+  "name": "Доллар США",
+  "rate": 74.2529,
+  "insert_dt": "2020-12-04 22:35:28"
+}
 ```
+
+## Консольная команда
+
+`path/to/yii currency/parse` - Команда для обновления курсов валют к рублю
