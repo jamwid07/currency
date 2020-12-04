@@ -15,16 +15,6 @@ return [
         'request' => [
             'csrfParam' => '_csrf-api',
         ],
-        'response' => [
-            'formatters' => [
-                'json' => [
-                    'class' => \yii\web\JsonResponseFormatter::class,
-                    'prettyPrint' => YII_DEBUG,
-                    'encodeOptions' => JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
-                ]
-            ],
-            'format' => \yii\web\Response::FORMAT_JSON,
-        ],
         'user' => [
             'identityClass' => 'common\models\User',
             'enableAutoLogin' => false,
@@ -47,6 +37,7 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                'GET currencies' => 'site/currencies',
             ],
         ],
     ],
