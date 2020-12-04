@@ -25,15 +25,6 @@ class SiteController extends Controller
         return $behaviors;
     }
 
-    public function actions(): array
-    {
-        return [
-            'error' => [
-                'class' => 'yii\web\ErrorAction',
-            ],
-        ];
-    }
-
     /**
      * Returns list of currencies with pagination
      * @return ActiveDataProvider
@@ -53,7 +44,7 @@ class SiteController extends Controller
      */
     public function actionCurrency(string $code): Currency
     {
-        $currency = Currency::findOne(['code' => $code]);
+        $currency = Currency::findOne(['code' => strtoupper($code)]);
 
         if ($currency === null) {
             throw new NotFoundHttpException("Currency not found");
