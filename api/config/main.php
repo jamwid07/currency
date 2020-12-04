@@ -15,14 +15,21 @@ return [
         'request' => [
             'csrfParam' => '_csrf-api',
         ],
+        'response' => [
+            'formatters' => [
+                'json' => [
+                    'class' => \yii\web\JsonResponseFormatter::class,
+                    'prettyPrint' => YII_DEBUG,
+                    'encodeOptions' => JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+                ]
+            ],
+            'format' => \yii\web\Response::FORMAT_JSON,
+        ],
         'user' => [
             'identityClass' => 'common\models\User',
-            'enableAutoLogin' => true,
+            'enableAutoLogin' => false,
+            'enableSession' => false,
             'identityCookie' => ['name' => '_identity-api', 'httpOnly' => true],
-        ],
-        'session' => [
-            // this is the name of the session cookie used for login on the api
-            'name' => 'advanced-api',
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
