@@ -46,7 +46,12 @@ class CurrencyController extends Controller
                 $currency->name = $item['Name'];
                 $currency->insert_dt = (new \DateTime())->format('Y-m-d H:i:s');
                 $currency->rate = $item['Value'] / $item['Nominal'];
-                $currency->save();
+                if (false === $currency->save()) {
+                    echo "Couldn't save currency, errors:\n";
+                    print_r($currency->getErrors());
+                    echo "skiping";
+                    continue;
+                }
                 $updateCount++;
             }
         }
