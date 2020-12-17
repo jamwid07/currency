@@ -57,4 +57,13 @@ class Currency extends ActiveRecord
             'insert_dt' => 'Insert Dt',
         ];
     }
+
+    public static function findOrCreateOne($condition)
+    {
+        $currency = static::findOne($condition);
+        if ($currency === null) {
+            $currency = new Currency();
+        }
+        return $currency;
+    }
 }

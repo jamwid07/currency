@@ -9,7 +9,6 @@ namespace console\controllers;
 
 use common\models\Currency;
 use yii\console\Controller;
-use yii\console\Exception;
 use yii\httpclient\Client;
 
 class CurrencyController extends Controller
@@ -17,30 +16,32 @@ class CurrencyController extends Controller
     public function actionParse()
     {
         echo "Sending requests to currency provider\n";
-        $client = new Client();
-        $client = $client->get(getenv('CURRENCY_PROVIDER'));
-        $client->addHeaders([
-            'Accept' => 'text/html,application/xhtml+xml,application/xml',
-            'Accept-Encoding' => 'gzip, deflate',
-            'Connection' => 'keep-alive',
-        ]);
-        $response = $client->send();
-        if (!$response->getIsOk()) {
-            throw new Exception("can't get currency list");
+        $data = $this->getData(getenv('CURRENCY_PROVIDER'));
+        if (null === $data) {
+            return 1;
         }
-        echo "Recieved successful response\n";
+        echo "Recieved success response\n";
 
-        $data = $response->getData()['Valute'];
+        if (false === isset($data['Valute']) || true === empty($data['Valute'])) {
+            echo "Currency list not provided\n";
+            return 1;
+        }
+        $data = $data['Valute'];
         echo "Started parsing currencies\n";
 
         $updateCount = 0;
         foreach ($data as $item) {
             $item['Value'] = str_replace(',', '.', $item['Value']);
-            $currency = Currency::findOne(['code' => $item['CharCode']]);
-            if ($currency === null) {
-                $currency = new Currency();
+            $currency = Currency::findOrCreateOne(['code' => $item['CharCode']]);
+
+            // Prevent division by zero error
+            if (0 == $item['Nominal']) {
+                echo "Can't calculate currency rate, incorrect nominal\n";
+                echo "Skipping currency: " . $item['CharCode'] . "\n";
+                continue;
             }
-            if ($currency->isNewRecord || $currency->rate !== $item['Value']/$item['Nominal']) {
+
+            if ($currency->isNewRecord || $currency->rate !== $item['Value'] / $item['Nominal']) {
                 $currency->code = $item['CharCode'];
                 $currency->name = $item['Name'];
                 $currency->insert_dt = (new \DateTime())->format('Y-m-d H:i:s');
@@ -52,5 +53,27 @@ class CurrencyController extends Controller
 
         echo "End parsing\n";
         echo "Updated $updateCount currencies\n";
+        return 0;
+    }
+
+    private function getData($url)
+    {
+        $client = new Client();
+        $client = $client->get($url);
+        $client->addHeaders([
+            'Accept' => 'text/html,application/xhtml+xml,application/xml',
+            'Accept-Encoding' => 'gzip, deflate',
+            'Connection' => 'keep-alive',
+        ]);
+        try {
+            $response = $client->send();
+            $response->getIsOk();
+        } catch (\yii\httpclient\Exception $e) {
+            echo "Error! Can't connect to currency provider url\n";
+            echo "Error code: " . $e->getCode() . "\n";
+            echo "Message: " . $e->getMessage() . "\n";
+            return null;
+        }
+        return $response->getData();
     }
 }
