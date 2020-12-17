@@ -14,10 +14,10 @@ use yii\db\ActiveRecord;
  * This is the model class for table "currency".
  *
  * @property int $id
- * @property string|null $code
- * @property string|null $name
- * @property float|null $rate
- * @property string|null $insert_dt
+ * @property string $code
+ * @property string $name
+ * @property float $rate
+ * @property string $insert_dt
  */
 class Currency extends ActiveRecord
 {
@@ -35,9 +35,11 @@ class Currency extends ActiveRecord
     public function rules()
     {
         return [
+            [['code', 'name', 'rate', 'insert_dt'], 'required'],
             [['rate'], 'number'],
             [['insert_dt'], 'safe'],
             [['code'], 'string', 'max' => 8],
+            ['code', 'unique'],
             [['name'], 'string', 'max' => 255],
         ];
     }
